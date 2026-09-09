@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Battle Arena</title>
 
 <style>
@@ -11,12 +11,15 @@ body{
     overflow:hidden;
     background:#1a1a1a;
     font-family:Arial,sans-serif;
+    touch-action: none;
 }
 
 canvas{
     display:block;
     margin:auto;
     background:#2d3436;
+    max-width: 100%;
+    height: auto;
 }
 
 #hud{
@@ -26,6 +29,7 @@ canvas{
     color:white;
     font-size:24px;
     font-weight:bold;
+    z-index: 10;
 }
 
 #gameOver{
@@ -44,6 +48,7 @@ canvas{
     box-shadow:
     0 0 20px red,
     0 0 50px rgba(255,0,0,.5);
+    z-index: 20;
 }
 
 button{
@@ -53,6 +58,74 @@ button{
     cursor:pointer;
     border:none;
     border-radius:8px;
+}
+
+/* Mobile On-Screen Controls */
+#controls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 10;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.d-pad-row {
+    display: flex;
+    gap: 25px;
+}
+
+.mob-btn {
+    width: 65px;
+    height: 65px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    font-size: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    user-select: none;
+    -webkit-user-select: none;
+    backdrop-filter: blur(4px);
+}
+
+.mob-btn:active {
+    background: rgba(0, 255, 255, 0.4);
+    border-color: cyan;
+}
+
+#action-group {
+    display: flex;
+    align-items: center;
+}
+
+.attack-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 0, 0, 0.3);
+    border: 2px solid rgba(255, 0, 0, 0.6);
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+.attack-btn:active {
+    background: rgba(255, 0, 0, 0.6);
+    border-color: white;
 }
 </style>
 </head>
@@ -78,6 +151,21 @@ button{
 
 <canvas id="gameCanvas" width="1000" height="650"></canvas>
 
+<!-- On-Screen Mobile Controls Layout -->
+<div id="controls">
+    <div class="control-group">
+        <button class="mob-btn" id="upBtn">&#8593;</button>
+        <div class="d-pad-row">
+            <button class="mob-btn" id="leftBtn">&#8592;</button>
+            <button class="mob-btn" id="rightBtn">&#8594;</button>
+        </div>
+        <button class="mob-btn" id="downBtn">&#8595;</button>
+    </div>
+    <div class="control-group" id="action-group">
+        <button class="mob-btn attack-btn" id="attackBtn">ATTACK</button>
+    </div>
+</div>
+
 <script>
 
 const canvas = document.getElementById("gameCanvas");
@@ -101,6 +189,47 @@ document.addEventListener("keydown",(e)=>{
 document.addEventListener("keyup",(e)=>{
     keys[e.key]=false;
 });
+
+// Helper function to bind mobile touch/mouse events to key states or actions
+function bindTouchButton(id, keyCode, isAction = false) {
+    const btn = document.getElementById(id);
+    
+    btn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (isAction) {
+            attack();
+        } else {
+            keys[keyCode] = true;
+        }
+    }, {passive: false});
+
+    btn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        if (!isAction) {
+            keys[keyCode] = false;
+        }
+    }, {passive: false});
+
+    // Fallback for desktop mouse clicking on mobile buttons if testing
+    btn.addEventListener("mousedown", () => {
+        if (isAction) {
+            attack();
+        } else {
+            keys[keyCode] = true;
+        }
+    });
+    btn.addEventListener("mouseup", () => {
+        if (!isAction) {
+            keys[keyCode] = false;
+        }
+    });
+}
+
+bindTouchButton("upBtn", "ArrowUp");
+bindTouchButton("downBtn", "ArrowDown");
+bindTouchButton("leftBtn", "ArrowLeft");
+bindTouchButton("rightBtn", "ArrowRight");
+bindTouchButton("attackBtn", null, true);
 
 const player = {
     x:500,
