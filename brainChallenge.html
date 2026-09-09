@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Brain Challenge</title>
 
 <style>
@@ -12,16 +12,23 @@ body{
     color:white;
     text-align:center;
     margin:0;
-    padding:30px;
+    padding:20px;
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .container{
     max-width:700px;
+    width: 100%;
     margin:auto;
     background:rgba(255,255,255,0.1);
-    padding:30px;
+    padding:20px;
     border-radius:20px;
     box-shadow:0 0 20px rgba(0,0,0,0.3);
+    box-sizing: border-box;
 }
 
 button{
@@ -37,12 +44,18 @@ input{
     padding:12px;
     font-size:18px;
     width:200px;
+    max-width: 100%;
     text-align:center;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: none;
+    outline: none;
 }
 
 #question{
     font-size:32px;
     margin:20px 0;
+    word-break: break-word;
 }
 
 #scoreBoard{
