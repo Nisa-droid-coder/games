@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Space Shooter</title>
 
 <style>
@@ -11,12 +11,15 @@ body{
     overflow:hidden;
     background:black;
     font-family:Arial, sans-serif;
+    touch-action: none;
 }
 
 canvas{
     display:block;
     margin:auto;
     background:linear-gradient(to bottom,#000015,#000);
+    max-width: 100%;
+    height: auto;
 }
 
 #hud{
@@ -26,6 +29,7 @@ canvas{
     color:white;
     font-size:24px;
     font-weight:bold;
+    z-index: 10;
 }
 
 #gameOver{
@@ -42,6 +46,7 @@ canvas{
     border: 2px solid #00ffff;
     box-shadow: 0 0 20px #00ffff,
                 0 0 40px rgba(0,255,255,0.5);
+    z-index: 20;
 }
 
 button{
@@ -50,6 +55,58 @@ button{
     cursor:pointer;
     border:none;
     border-radius:8px;
+}
+
+/* Mobile On-Screen Controls */
+#controls {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 10;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.nav-group {
+    display: flex;
+    gap: 10px;
+}
+
+.mob-btn {
+    width: 70px;
+    height: 70px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    color: white;
+    font-size: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    user-select: none;
+    -webkit-user-select: none;
+    backdrop-filter: blur(4px);
+}
+
+.mob-btn:active {
+    background: rgba(0, 255, 255, 0.4);
+    border-color: cyan;
+}
+
+#fireBtn {
+    background: rgba(255, 255, 0, 0.15);
+    border-color: rgba(255, 255, 0, 0.5);
+    color: yellow;
+}
+
+#fireBtn:active {
+    background: rgba(255, 255, 0, 0.4);
+    border-color: yellow;
 }
 </style>
 </head>
@@ -71,6 +128,15 @@ button{
 </div>
 
 <canvas id="gameCanvas" width="900" height="600"></canvas>
+
+<!-- On-Screen Mobile Controls Layout -->
+<div id="controls">
+    <div class="nav-group">
+        <button class="mob-btn" id="leftBtn">&#8592;</button>
+        <button class="mob-btn" id="rightBtn">&#8594;</button>
+    </div>
+    <button class="mob-btn" id="fireBtn">🔥</button>
+</div>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
@@ -111,6 +177,32 @@ document.addEventListener("keydown",(e)=>{
 document.addEventListener("keyup",(e)=>{
     keys[e.key] = false;
 });
+
+// Helper function to bind mobile touch/mouse events to key states
+function bindTouchButton(id, keyCode) {
+    const btn = document.getElementById(id);
+    
+    btn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        keys[keyCode] = true;
+    }, {passive: false});
+
+    btn.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        keys[keyCode] = false;
+    }, {passive: false});
+
+    btn.addEventListener("mousedown", () => {
+        keys[keyCode] = true;
+    });
+    btn.addEventListener("mouseup", () => {
+        keys[keyCode] = false;
+    });
+}
+
+bindTouchButton("leftBtn", "ArrowLeft");
+bindTouchButton("rightBtn", "ArrowRight");
+bindTouchButton("fireBtn", " "); // Spacebar alias for mobile fire button
 
 function createRock(){
     rocks.push({
@@ -181,7 +273,7 @@ function update(){
         player.x += player.speed;
     }
 
-    // Hold Space to shoot repeatedly
+    // Hold Space or Mobile Fire button to shoot repeatedly
     if(keys[" "] || keys["Spacebar"]){
         if(shootCooldown <= 0){
             shoot();
