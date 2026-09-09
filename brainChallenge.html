@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Challenge</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    color:white;
+    text-align:center;
+    margin:0;
+    padding:30px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    background:rgba(255,255,255,0.1);
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 20px rgba(0,0,0,0.3);
+}
+
+button{
+    padding:12px 25px;
+    font-size:18px;
+    margin:10px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+}
+
+input{
+    padding:12px;
+    font-size:18px;
+    width:200px;
+    text-align:center;
+}
+
+#question{
+    font-size:32px;
+    margin:20px 0;
+}
+
+#scoreBoard{
+    font-size:24px;
+    margin-bottom:20px;
+}
+
+.correct{
+    color:#00ff88;
+}
+
+.wrong{
+    color:#ff4d4d;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🧠 Brain Challenge</h1>
+
+<div id="scoreBoard">
+Score: <span id="score">0</span> |
+Question: <span id="current">1</span>/15
+</div>
+
+<div id="question">Press Start</div>
+
+<input type="text" id="answer" placeholder="Your Answer">
+
+<br>
+
+<button onclick="startGame()">▶ Start</button>
+<button onclick="submitAnswer()">✅ Submit</button>
+<button onclick="location.reload()">🔄 Restart</button>
+<button onclick="location.href='index.html'">Back</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+let score = 0;
+let questionNumber = 1;
+let currentAnswer = "";
+let gameStarted = false;
+
+const totalQuestions = 15;
+
+function generateQuestion(){
+
+    const type = Math.floor(Math.random()*3);
+
+    if(type === 0){
+
+        let a = Math.floor(Math.random()*50)+1;
+        let b = Math.floor(Math.random()*50)+1;
+
+        document.getElementById("question").innerHTML =
+            `➕ ${a} + ${b}`;
+
+        currentAnswer = (a+b).toString();
+    }
+
+    if(type === 1){
+
+        let a = Math.floor(Math.random()*20)+1;
+        let b = Math.floor(Math.random()*20)+1;
+
+        document.getElementById("question").innerHTML =
+            `✖️ ${a} × ${b}`;
+
+        currentAnswer = (a*b).toString();
+    }
+
+    if(type === 2){
+
+        const letters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        let memory = "";
+
+        for(let i=0;i<5;i++){
+            memory +=
+            letters[Math.floor(Math.random()*letters.length)];
+        }
+
+        currentAnswer = memory;
+
+        document.getElementById("question").innerHTML =
+            `🧠 Memorize: <b>${memory}</b>`;
+
+        setTimeout(()=>{
+
+            document.getElementById("question").innerHTML =
+            "Type the memory sequence";
+
+        },2000);
+    }
+
+    document.getElementById("answer").value = "";
+}
+
+function startGame(){
+
+    if(gameStarted) return;
+
+    gameStarted = true;
+    score = 0;
+    questionNumber = 1;
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("current").textContent =
+        questionNumber;
+
+    generateQuestion();
+}
+
+function submitAnswer(){
+
+    if(!gameStarted) return;
+
+    const userAnswer =
+    document.getElementById("answer").value.trim();
+
+    const result =
+    document.getElementById("result");
+
+    if(
+        userAnswer.toUpperCase() ===
+        currentAnswer.toUpperCase()
+    ){
+
+        score += 10;
+
+        result.innerHTML =
+            "<h2 class='correct'>✅ Correct!</h2>";
+
+    }else{
+
+        result.innerHTML =
+            `<h2 class='wrong'>❌ Wrong! Answer: ${currentAnswer}</h2>`;
+    }
+
+    document.getElementById("score").textContent = score;
+
+    questionNumber++;
+
+    if(questionNumber > totalQuestions){
+
+        endGame();
+        return;
+    }
+
+    document.getElementById("current").textContent =
+        questionNumber;
+
+    setTimeout(()=>{
+        result.innerHTML="";
+        generateQuestion();
+    },1000);
+}
+
+function endGame(){
+
+    let rank = "";
+
+    if(score >= 130){
+        rank = "🏆 Genius";
+    }
+    else if(score >= 100){
+        rank = "🥇 Expert";
+    }
+    else if(score >= 70){
+        rank = "🥈 Smart";
+    }
+    else{
+        rank = "🥉 Keep Practicing";
+    }
+
+    document.getElementById("question").innerHTML =
+    `Game Finished<br><br>
+    Final Score: ${score}<br>
+    Rank: ${rank}`;
+
+    document.getElementById("answer").style.display =
+    "none";
+
+    document.getElementById("result").innerHTML = "";
+}
+
+document.getElementById("answer")
+.addEventListener("keydown",function(e){
+
+    if(e.key === "Enter"){
+        submitAnswer();
+    }
+});
+
+</script>
+
+</body>
+</html>

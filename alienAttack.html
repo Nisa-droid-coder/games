@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Alien Attack Platformer</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#87CEEB;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    margin:auto;
+    background:linear-gradient(#6ec6ff,#dff6ff);
+}
+
+#hud{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+#gameOver{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:white;
+    display:none;
+
+    background:#1c1c1c;
+    padding:30px;
+    border-radius:20px;
+    border:2px solid #00ffff;
+
+    box-shadow:
+    0 0 20px cyan,
+    0 0 40px rgba(0,255,255,.5);
+}
+
+button{
+    padding:12px 20px;
+    margin:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+    Score: <span id="score">0</span>
+    |
+    Lives: <span id="lives">3</span>
+</div>
+
+<div id="gameOver">
+    <h1 id="resultText">Game Over</h1>
+    <h2 id="finalScore"></h2>
+
+    <button onclick="location.reload()">Restart</button>
+    <br>
+    <br>
+    <button onclick="window.location.href='index.html'">Back</button>
+</div>
+
+<canvas id="gameCanvas" width="1200" height="600"></canvas>
+
+<script>
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let lives = 3;
+let gameRunning = true;
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+    keys[e.key]=true;
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key]=false;
+});
+
+const gravity = 0.8;
+
+const player = {
+    x:100,
+    y:450,
+    width:40,
+    height:60,
+    speed:5,
+    velocityY:0,
+    jumping:false
+};
+
+const platforms = [
+    {x:0,y:550,width:1200,height:50},
+    {x:250,y:450,width:180,height:20},
+    {x:500,y:350,width:180,height:20},
+    {x:800,y:270,width:200,height:20}
+];
+
+const aliens = [
+    {x:350,y:410,width:40,height:40,alive:true,dir:1},
+    {x:600,y:310,width:40,height:40,alive:true,dir:1},
+    {x:900,y:230,width:40,height:40,alive:true,dir:1}
+];
+
+const bullets = [];
+
+const coins = [
+    {x:300,y:400,collected:false},
+    {x:550,y:300,collected:false},
+    {x:850,y:220,collected:false}
+];
+
+const flag = {
+    x:1100,
+    y:450,
+    width:30,
+    height:100
+};
+
+function shoot(){
+    bullets.push({
+        x:player.x + 20,
+        y:player.y + 20,
+        width:10,
+        height:4
+    });
+}
+
+let shootCooldown = 0;
+
+function collision(a,b){
+    return(
+    a.x < b.x+b.width &&
+    a.x+a.width > b.x &&
+    a.y < b.y+b.height &&
+    a.y+a.height > b.y
+    );
+}
+
+function update(){
+
+    if(keys["ArrowLeft"]){
+        player.x -= player.speed;
+    }
+
+    if(keys["ArrowRight"]){
+        player.x += player.speed;
+    }
+
+    if(keys["ArrowUp"] && !player.jumping){
+        player.velocityY = -15;
+        player.jumping = true;
+    }
+
+    if(keys[" "] && shootCooldown <= 0){
+        shoot();
+        shootCooldown = 20;
+    }
+
+    if(shootCooldown > 0){
+        shootCooldown--;
+    }
+
+    player.velocityY += gravity;
+    player.y += player.velocityY;
+
+    let onGround = false;
+
+    platforms.forEach(platform=>{
+
+        if(
+            player.x + player.width > platform.x &&
+            player.x < platform.x + platform.width &&
+            player.y + player.height >= platform.y &&
+            player.y + player.height <= platform.y + 20 &&
+            player.velocityY >= 0
+        ){
+            player.y = platform.y - player.height;
+            player.velocityY = 0;
+            player.jumping = false;
+            onGround = true;
+        }
+    });
+
+    if(!onGround){
+        player.jumping = true;
+    }
+
+    bullets.forEach((bullet,index)=>{
+
+        bullet.x += 10;
+
+        if(bullet.x > canvas.width){
+            bullets.splice(index,1);
+        }
+    });
+
+    aliens.forEach(alien=>{
+
+        if(!alien.alive) return;
+
+        alien.x += alien.dir * 2;
+
+        if(alien.x < 50 || alien.x > 1100){
+            alien.dir *= -1;
+        }
+
+        // Bullet hit alien
+        bullets.forEach((bullet,bIndex)=>{
+
+            if(collision(bullet,alien)){
+
+                alien.alive = false;
+                bullets.splice(bIndex,1);
+
+                score += 100;
+                document.getElementById("score").textContent = score;
+            }
+        });
+
+        // Stomp alien
+        if(
+            alien.alive &&
+            collision(player,alien)
+        ){
+
+            if(player.velocityY > 0 &&
+               player.y + player.height < alien.y + 20){
+
+                alien.alive = false;
+
+                player.velocityY = -10;
+
+                score += 100;
+
+                document.getElementById("score").textContent = score;
+
+            }else{
+
+                lives--;
+
+                document.getElementById("lives").textContent = lives;
+
+                player.x = 100;
+                player.y = 450;
+
+                if(lives <= 0){
+                    gameOver("👽 GAME OVER");
+                }
+            }
+        }
+    });
+
+    coins.forEach(coin=>{
+
+        if(!coin.collected){
+
+            if(
+                player.x < coin.x+20 &&
+                player.x+player.width > coin.x &&
+                player.y < coin.y+20 &&
+                player.y+player.height > coin.y
+            ){
+
+                coin.collected = true;
+
+                score += 50;
+
+                document.getElementById("score").textContent = score;
+            }
+        }
+    });
+
+    if(collision(player,flag)){
+        gameOver("🏆 YOU WIN!");
+    }
+
+}
+
+function drawAstronaut(){
+
+    ctx.fillStyle="white";
+
+    ctx.beginPath();
+    ctx.arc(player.x+20,player.y+15,15,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#4FC3F7";
+
+    ctx.beginPath();
+    ctx.arc(player.x+20,player.y+15,10,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle="#ddd";
+    ctx.fillRect(player.x+8,player.y+30,24,20);
+
+    ctx.fillRect(player.x+12,player.y+50,5,10);
+    ctx.fillRect(player.x+23,player.y+50,5,10);
+}
+
+function draw(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    platforms.forEach(platform=>{
+
+        ctx.fillStyle="#654321";
+
+        ctx.fillRect(
+            platform.x,
+            platform.y,
+            platform.width,
+            platform.height
+        );
+    });
+
+    coins.forEach(coin=>{
+
+        if(!coin.collected){
+
+            ctx.fillStyle="gold";
+
+            ctx.beginPath();
+            ctx.arc(
+                coin.x,
+                coin.y,
+                10,
+                0,
+                Math.PI*2
+            );
+            ctx.fill();
+        }
+    });
+
+    aliens.forEach(alien=>{
+
+        if(alien.alive){
+
+            ctx.fillStyle="lime";
+
+            ctx.beginPath();
+            ctx.arc(alien.x+20,alien.y+15,15,0,Math.PI*2);
+            ctx.fill();
+
+            ctx.fillRect(alien.x+5,alien.y+25,30,15);
+        }
+    });
+
+    ctx.fillStyle="red";
+
+    bullets.forEach(bullet=>{
+
+        ctx.fillRect(
+            bullet.x,
+            bullet.y,
+            bullet.width,
+            bullet.height
+        );
+    });
+
+    ctx.fillStyle="black";
+    ctx.fillRect(flag.x,flag.y,5,flag.height);
+
+    ctx.fillStyle="red";
+    ctx.fillRect(flag.x,flag.y,30,20);
+
+    drawAstronaut();
+}
+
+function gameOver(text){
+
+    gameRunning = false;
+
+    document.getElementById("resultText").innerHTML = text;
+
+    document.getElementById("finalScore").innerHTML =
+        "Final Score: " + score;
+
+    document.getElementById("gameOver").style.display = "block";
+}
+
+function gameLoop(){
+
+    if(!gameRunning) return;
+
+    update();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+</script>
+
+</body>
+</html>

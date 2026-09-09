@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming Platform</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    text-align:center;
+    padding:25px;
+    background:#1e293b;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.games-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    padding:30px;
+    max-width:1200px;
+    margin:auto;
+}
+
+.game-card{
+    background:#1e293b;
+    border-radius:15px;
+    overflow:hidden;
+    transition:0.3s;
+    cursor:pointer;
+    box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+
+.game-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 8px 20px rgba(0,255,255,0.3);
+}
+
+.game-image{
+    height:160px;
+    background:linear-gradient(135deg,#3b82f6,#06b6d4);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:60px;
+}
+
+.game-info{
+    padding:15px;
+}
+
+.game-info h3{
+    margin-bottom:10px;
+}
+
+.play-btn{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#22c55e;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.play-btn:hover{
+    background:#16a34a;
+}
+</style>
+</head>
+<body>
+
+<header>
+    🎮 Gaming Platform
+</header>
+
+<div class="games-container">
+
+    <div class="game-card">
+        <div class="game-image">🚀</div>
+        <div class="game-info">
+            <h3>Space Shooter</h3>
+            <p>Fight enemies in space.</p>
+            <button class="play-btn" onclick="window.location.href='spaceShooter.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🧱</div>
+        <div class="game-info">
+            <h3>Brick Blaster</h3>
+            <p>Break all the bricks.</p>
+            <button class="play-btn" onclick="window.location.href='brickBlaster.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🏎️</div>
+        <div class="game-info">
+            <h3>Racing Pro</h3>
+            <p>Race to the finish line.</p>
+            <button class="play-btn" onclick="window.location.href='racingPro.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">👾</div>
+        <div class="game-info">
+            <h3>Alien Attack</h3>
+            <p>Defend Earth from aliens.</p>
+            <button class="play-btn" onclick="window.location.href='alienAttack.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🧩</div>
+        <div class="game-info">
+            <h3>Puzzle Master</h3>
+            <p>Solve challenging puzzles.</p>
+            <button class="play-btn" onclick="window.location.href='puzzleMaster.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">⚔️</div>
+        <div class="game-info">
+            <h3>Battle Arena</h3>
+            <p>Become the ultimate warrior.</p>
+            <button class="play-btn" onclick="window.location.href='battleArena.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🧠</div>
+        <div class="game-info">
+            <h3>Brain Challenge</h3>
+            <p>Test your intelligence.</p>
+            <button class="play-btn" onclick="window.location.href='brainChallenge.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🏹</div>
+        <div class="game-info">
+            <h3>Archery Hero</h3>
+            <p>Hit the target and score high.</p>
+            <button class="play-btn" onclick="window.location.href='archeryHero.html'">Play</button>
+        </div>
+    </div>
+
+    <div class="game-card">
+        <div class="game-image">🐍</div>
+        <div class="game-info">
+            <h3>Snake</h3>
+            <p>Eat and grow.</p>
+            <button class="play-btn" onclick="window.location.href='snake.html'">Play</button>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+``

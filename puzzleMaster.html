@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puzzle Master</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+}
+
+h1{
+    margin-top:20px;
+}
+
+#stats{
+    margin:15px;
+    font-size:20px;
+}
+
+#puzzle{
+    width:420px;
+    display:grid;
+    grid-template-columns:repeat(4,100px);
+    grid-template-rows:repeat(4,100px);
+    gap:5px;
+}
+
+.tile{
+    background:#22c55e;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:32px;
+    font-weight:bold;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.tile:hover{
+    transform:scale(1.05);
+}
+
+.empty{
+    background:transparent;
+    border:2px dashed rgba(255,255,255,0.3);
+    cursor:default;
+}
+
+.controls{
+    margin-top:20px;
+}
+
+button{
+    padding:12px 20px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>🧩 Puzzle Master</h1>
+
+<div id="stats">
+    Moves: <span id="moves">0</span> |
+    Time: <span id="timer">0</span>s
+</div>
+
+<div id="puzzle"></div>
+
+<div class="controls">
+    <button onclick="shuffleBoard()">🔀 Shuffle</button>
+    <button onclick="resetGame()">🔄 Restart</button>
+    <button onclick="location.href='index.html'">Back</button>
+</div>
+
+<script>
+
+let board = [
+    1,2,3,4,
+    5,6,7,8,
+    9,10,11,12,
+    13,14,15,0
+];
+
+let moves = 0;
+let seconds = 0;
+
+const puzzle = document.getElementById("puzzle");
+
+setInterval(()=>{
+    seconds++;
+    document.getElementById("timer").textContent = seconds;
+},1000);
+
+function drawBoard(){
+
+    puzzle.innerHTML = "";
+
+    board.forEach((value,index)=>{
+
+        const tile = document.createElement("div");
+
+        if(value === 0){
+            tile.className = "tile empty";
+        }else{
+            tile.className = "tile";
+            tile.textContent = value;
+            tile.onclick = ()=>moveTile(index);
+        }
+
+        puzzle.appendChild(tile);
+    });
+}
+
+function moveTile(index){
+
+    const emptyIndex = board.indexOf(0);
+
+    const validMoves = [
+        emptyIndex - 1,
+        emptyIndex + 1,
+        emptyIndex - 4,
+        emptyIndex + 4
+    ];
+
+    let canMove = false;
+
+    validMoves.forEach(pos=>{
+
+        if(pos === index){
+
+            if(
+                Math.abs(index-emptyIndex) === 1 &&
+                Math.floor(index/4) !== Math.floor(emptyIndex/4)
+            ){
+                return;
+            }
+
+            canMove = true;
+        }
+    });
+
+    if(canMove){
+
+        [board[index], board[emptyIndex]] =
+        [board[emptyIndex], board[index]];
+
+        moves++;
+
+        document.getElementById("moves").textContent = moves;
+
+        drawBoard();
+
+        checkWin();
+    }
+}
+
+function shuffleBoard(){
+
+    for(let i=0;i<300;i++){
+
+        const empty = board.indexOf(0);
+
+        const possibilities = [];
+
+        const row = Math.floor(empty/4);
+        const col = empty%4;
+
+        if(col>0) possibilities.push(empty-1);
+        if(col<3) possibilities.push(empty+1);
+        if(row>0) possibilities.push(empty-4);
+        if(row<3) possibilities.push(empty+4);
+
+        const randomMove =
+        possibilities[Math.floor(Math.random()*possibilities.length)];
+
+        [board[empty],board[randomMove]] =
+        [board[randomMove],board[empty]];
+    }
+
+    moves = 0;
+    seconds = 0;
+
+    document.getElementById("moves").textContent = 0;
+    document.getElementById("timer").textContent = 0;
+
+    drawBoard();
+}
+
+function checkWin(){
+
+    const solved = [
+        1,2,3,4,
+        5,6,7,8,
+        9,10,11,12,
+        13,14,15,0
+    ];
+
+    if(JSON.stringify(board) === JSON.stringify(solved)){
+
+        setTimeout(()=>{
+
+            alert(
+                "🏆 Puzzle Solved!\n\nMoves: " +
+                moves +
+                "\nTime: " +
+                seconds +
+                " seconds"
+            );
+
+        },100);
+    }
+}
+
+function resetGame(){
+
+    board = [
+        1,2,3,4,
+        5,6,7,8,
+        9,10,11,12,
+        13,14,15,0
+    ];
+
+    moves = 0;
+    seconds = 0;
+
+    document.getElementById("moves").textContent = 0;
+    document.getElementById("timer").textContent = 0;
+
+    shuffleBoard();
+}
+
+shuffleBoard();
+
+</script>
+
+</body>
+</html>

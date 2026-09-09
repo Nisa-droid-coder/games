@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archery Hero</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:linear-gradient(#87CEEB,#90EE90);
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    margin:auto;
+}
+
+#hud{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+    color:#222;
+}
+
+#gameOver{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    display:none;
+    text-align:center;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+}
+
+button{
+    padding:12px 20px;
+    margin:10px;
+    font-size:18px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+    Score: <span id="score">0</span>
+    |
+    Time: <span id="time">60</span>s
+</div>
+
+<div id="gameOver">
+    <h1>🏹 Challenge Complete!</h1>
+    <h2 id="finalScore"></h2>
+
+    <button onclick="location.reload()">Restart</button>
+    <br>
+    <br>
+    <button onclick="window.location.href='index.html'">Back</button>
+</div>
+
+<canvas id="gameCanvas" width="1000" height="600"></canvas>
+
+<script>
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let timeLeft = 60;
+let gameRunning = true;
+let combo = 0;
+
+const bow = {
+    x:100,
+    y:300
+};
+
+const arrows = [];
+
+const target = {
+    x:800,
+    y:250,
+    radius:50,
+    speed:3,
+    direction:1
+};
+
+// Timer
+const timer = setInterval(()=>{
+
+    if(!gameRunning) return;
+
+    timeLeft--;
+
+    document.getElementById("time").textContent =
+    timeLeft;
+
+    if(timeLeft <= 0){
+
+        clearInterval(timer);
+        endGame();
+    }
+
+},1000);
+
+canvas.addEventListener("click",()=>{
+
+    if(!gameRunning) return;
+
+    arrows.push({
+        x:bow.x,
+        y:bow.y,
+        width:40,
+        height:4,
+        speed:10
+    });
+});
+
+function update(){
+
+    // Target movement
+    target.y += target.speed * target.direction;
+
+    if(
+        target.y < 100 ||
+        target.y > 500
+    ){
+        target.direction *= -1;
+    }
+
+    // Arrows
+    for(let i=arrows.length-1;i>=0;i--){
+
+        arrows[i].x += arrows[i].speed;
+
+        if(arrows[i].x > canvas.width){
+            arrows.splice(i,1);
+            combo = 0;
+            continue;
+        }
+
+        const dx =
+        arrows[i].x - target.x;
+
+        const dy =
+        arrows[i].y - target.y;
+
+        const distance =
+        Math.sqrt(dx*dx + dy*dy);
+
+        if(distance < target.radius){
+
+            arrows.splice(i,1);
+
+            combo++;
+
+            let points = 10 + combo * 2;
+
+            score += points;
+
+            document.getElementById("score")
+            .textContent = score;
+
+            // Move target
+            target.x =
+            650 + Math.random()*250;
+
+            target.y =
+            120 + Math.random()*350;
+        }
+    }
+}
+
+function drawBow(){
+
+    ctx.strokeStyle="#8B4513";
+    ctx.lineWidth=5;
+
+    ctx.beginPath();
+    ctx.arc(
+        bow.x,
+        bow.y,
+        40,
+        -Math.PI/2,
+        Math.PI/2
+    );
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(bow.x,bow.y-40);
+    ctx.lineTo(bow.x,bow.y+40);
+    ctx.stroke();
+}
+
+function drawTarget(){
+
+    ctx.fillStyle="red";
+
+    ctx.beginPath();
+    ctx.arc(
+        target.x,
+        target.y,
+        target.radius,
+        0,
+        Math.PI*2
+    );
+    ctx.fill();
+
+    ctx.fillStyle="white";
+
+    ctx.beginPath();
+    ctx.arc(
+        target.x,
+        target.y,
+        35,
+        0,
+        Math.PI*2
+    );
+    ctx.fill();
+
+    ctx.fillStyle="red";
+
+    ctx.beginPath();
+    ctx.arc(
+        target.x,
+        target.y,
+        20,
+        0,
+        Math.PI*2
+    );
+    ctx.fill();
+
+    ctx.fillStyle="yellow";
+
+    ctx.beginPath();
+    ctx.arc(
+        target.x,
+        target.y,
+        8,
+        0,
+        Math.PI*2
+    );
+    ctx.fill();
+}
+
+function drawArrows(){
+
+    arrows.forEach(a=>{
+
+        ctx.strokeStyle="black";
+        ctx.lineWidth=3;
+
+        ctx.beginPath();
+        ctx.moveTo(a.x,a.y);
+        ctx.lineTo(a.x+40,a.y);
+        ctx.stroke();
+
+        ctx.fillStyle="gray";
+
+        ctx.beginPath();
+        ctx.moveTo(a.x+40,a.y);
+        ctx.lineTo(a.x+30,a.y-5);
+        ctx.lineTo(a.x+30,a.y+5);
+        ctx.fill();
+    });
+}
+
+function drawGrass(){
+
+    ctx.fillStyle="#2e8b57";
+    ctx.fillRect(
+        0,
+        550,
+        canvas.width,
+        50
+    );
+}
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    drawGrass();
+    drawBow();
+    drawTarget();
+    drawArrows();
+
+    ctx.fillStyle="#222";
+    ctx.font="20px Arial";
+    ctx.fillText(
+        "Click anywhere to shoot",
+        20,
+        50
+    );
+}
+
+function endGame(){
+
+    gameRunning = false;
+
+    document.getElementById("finalScore")
+    .innerHTML =
+    "Final Score: " + score;
+
+    document.getElementById("gameOver")
+    .style.display = "block";
+}
+
+function gameLoop(){
+
+    if(!gameRunning) return;
+
+    update();
+    draw();
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+</script>
+
+</body>
+</html>
